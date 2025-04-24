@@ -1728,6 +1728,12 @@ describe("Core basic APIs", () => {
     core.resetEnvVar("testKey", ctx, false);
     expect(ctx.envVars).to.deep.equal({ existingKey: "value", testKey: "" });
   });
+  it("provisionResources", async () => {
+    const core = new FxCore(tools);
+    sandbox.stub(core, "provisionResourcesOnce").resolves(ok(undefined));
+    const res = await core.provisionResources({} as any);
+    assert.isTrue(res.isOk() && res.value === undefined);
+  });
 });
 
 describe("apply yaml template", async () => {
