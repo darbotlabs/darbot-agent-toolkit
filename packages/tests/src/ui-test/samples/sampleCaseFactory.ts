@@ -342,8 +342,8 @@ export abstract class CaseFactory {
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcess;
       let dockerProcess: ChildProcessWithoutNullStreams;
-      let successFlag_local = true;
-      let successFlag_dev = true;
+      let successFlag_local = false;
+      let successFlag_dev = false;
       let envContent = "";
       let botFlag = false;
       let envFile = "";
@@ -352,13 +352,25 @@ export abstract class CaseFactory {
       beforeEach(async function () {
         // ensure workbench is ready
         this.timeout(Timeout.prepareTestCase);
-        sampledebugContext = new SampledebugContext(
-          sampleName,
-          sampleProjectMap[sampleName],
-          options?.testRootFolder ?? "./resource",
-          options?.repoPath ?? "./resource"
-        );
-        await sampledebugContext.before();
+        await VSBrowser.instance.driver.sleep(Timeout.shortTimeLoading);
+        try {
+          sampledebugContext = new SampledebugContext(
+            sampleName,
+            sampleProjectMap[sampleName],
+            options?.testRootFolder ?? "./resource",
+            options?.repoPath ?? "./resource"
+          );
+          await sampledebugContext.before();
+        } catch (error) {
+          errorMessage = "[Error]: " + error;
+          await VSBrowser.instance.takeScreenshot(
+            getScreenshotName("before_error")
+          );
+          await VSBrowser.instance.driver.sleep(
+            Timeout.playwrightDefaultTimeout
+          );
+          throw new Error(errorMessage);
+        }
       });
 
       after(async function () {
@@ -442,8 +454,8 @@ export abstract class CaseFactory {
               console.log("skip ui skipInit...");
               console.log("debug finish!");
             }
+            successFlag_dev = true;
           } catch (error) {
-            successFlag_dev = false;
             errorMessage = "[Error]: " + error;
             await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
             await VSBrowser.instance.driver.sleep(
@@ -685,8 +697,8 @@ export abstract class CaseFactory {
               console.log("skip ui skipInit...");
               console.log("debug finish!");
             }
+            successFlag_local = true;
           } catch (error) {
-            successFlag_local = false;
             errorMessage = "[Error]: " + error;
             await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
             await VSBrowser.instance.driver.sleep(
