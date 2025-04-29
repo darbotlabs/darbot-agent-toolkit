@@ -789,7 +789,9 @@ export async function createNewProject(
       await input.selectQuickPick(CreateProjectQuestion.TeamsApp);
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.Tab);
-      await input.selectQuickPick("Dashboard");
+      await driver.sleep(Timeout.input);
+      await input.setText("Dashboard");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);
@@ -872,9 +874,9 @@ export async function createNewProject(
       break;
     }
     case "aichat": {
-      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await input.selectQuickPick(CreateProjectQuestion.AgentForTeams);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick(CreateProjectQuestion.BasicCustomEngineAgent);
+      await input.selectQuickPick(CreateProjectQuestion.BasicAgentForTeams);
       await driver.sleep(Timeout.input);
       // Choose ai type
       await input.setText(aiType);
