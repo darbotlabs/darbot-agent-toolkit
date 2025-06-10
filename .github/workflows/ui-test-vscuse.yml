@@ -874,7 +874,7 @@ jobs:
       #     echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail(v2)
-        uses: ./.github/actions/send-email-report-2
+        uses: ./.github/actions/send-email-report
         env:
           TO: ${{ steps.list-jobs.outputs.to }}
           BODY: '"${{ steps.list-jobs.outputs.body }}"'
