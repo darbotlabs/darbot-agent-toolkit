@@ -120,9 +120,9 @@ jobs:
     runs-on: windows-latest
     needs: setup
     permissions:
-        #id-token: write
+        id-token: write
         security-events: write
-    # environment: engineering
+    environment: engineering
     outputs:
       matrix: ${{ steps.set_output.outputs.matrix }}
     steps:
@@ -141,16 +141,40 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.branch }}
 
-      - name: Ensure agent_cases folder exists
+      - name: Ensure vscuse-related folder exists
         shell: pwsh
         run: |
-          $folderPath = "packages/tests/vscuse/agent_cases"
-          if (-not (Test-Path -Path $folderPath)) {
-            New-Item -ItemType Directory -Path $folderPath | Out-Null
-            Write-Host "Created folder: $folderPath"
+          $casesFolderPath = "packages/tests/vscuse/agent_cases"
+          if (-not (Test-Path -Path $casesFolderPath)) {
+            New-Item -ItemType Directory -Path $casesFolderPath | Out-Null
+            Write-Host "Created folder: $casesFolderPath"
           } else {
-            Write-Host "Folder already exists: $folderPath"
+            Write-Host "Folder already exists: $casesFolderPath"
           }
+          
+
+      - name: Install dependencies for TypeScript
+        run: |
+          npm install typescript ts-node @types/node node-fetch
+          npm install @azure/identity azure-devops-node-api
+
+      - name : Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+          enable-AzPSSession: true
+
+      - name: Fetch test cases from Azure DevOps
+        working-directory: packages/tests
+        env:
+          AZURE_DEVOPS_ORG_URL: "https://dev.azure.com/msazure/"
+          AZURE_DEVOPS_PROJECT: "Microsoft Teams Extensibility"
+          AZURE_DEVOPS_TEST_PLAN_ID: "33256964"
+          AZURE_DEVOPS_TEST_SUITE_ID: "33256965"
+        run: npx ts-node ./scripts/fetch-test-plan-test-cases.ts vscuse/agent_cases
+
 
       - name: Generate file list
         shell: pwsh
@@ -201,6 +225,13 @@ jobs:
   
           "matrix=$jsonText" | Out-File -Append -Encoding utf8 $env:GITHUB_OUTPUT
           Write-Host "Validated matrix: $jsonText"
+
+
+      - name: Upload test case files to artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscuse-agent-cases
+          path: packages/tests/vscuse/agent_cases/*.txt
           
 
   main:
@@ -214,8 +245,8 @@ jobs:
     timeout-minutes: 50
     environment: engineering
     env:
-      GH_APP_ID: ${{ secrets.VSCUSEAPPID }}
-      GH_APP_PRIVATE_KEY: ${{ secrets.VSCUSEAPPSECRET }}
+      GH_APP_ID: ${{ secrets.GH_APP_ID }}
+      GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
       CI_ENABLED: true
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}
 
@@ -271,6 +302,47 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.branch }}
 
+      - name: Ensure vscuse-related folder exists
+        shell: pwsh
+        run: |
+          $casesFolderPath = "packages/tests/vscuse/agent_cases"
+          if (-not (Test-Path -Path $casesFolderPath)) {
+            New-Item -ItemType Directory -Path $casesFolderPath | Out-Null
+            Write-Host "Created folder: $casesFolderPath"
+          } else {
+            Write-Host "Folder already exists: $casesFolderPath"
+          }
+          
+          $binFolderPath = "packages/tests/vscuse/binary"
+          if (-not (Test-Path -Path $binFolderPath)) {
+            New-Item -ItemType Directory -Path $binFolderPath | Out-Null
+            Write-Host "Created folder: $binFolderPath"
+          } else {
+            Write-Host "Folder already exists: $binFolderPath"
+          }
+
+
+      # Download test case files artifact and unzip to agent_cases
+      - name: Download vscuse-agent-cases artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vscuse-agent-cases
+          path: packages/tests/vscuse/agent_cases
+
+      - name: Unzip test case files if zipped
+        shell: pwsh
+        run: |
+          $zipFiles = Get-ChildItem -Path "packages/tests/vscuse/agent_cases" -Filter *.zip
+          if ($zipFiles.Count -eq 0) {
+            Write-Host "No zip files found in agent_cases directory."
+          }
+          foreach ($zip in $zipFiles) {
+            Write-Host "Unzipping $($zip.FullName)..."
+            Expand-Archive -Path $zip.FullName -DestinationPath "packages/tests/vscuse/agent_cases" -Force
+            Remove-Item $zip.FullName
+          }
+          Get-ChildItem -Path "packages/tests/vscuse/agent_cases" -Recurse | ForEach-Object { Write-Host $_.FullName }
+              
       # Setup the environment
       - name: Set Windows Environment Variables
         run: |
@@ -299,7 +371,7 @@ jobs:
         uses: ./.github/actions/setup-vscuse-environment
         with:
           version: latest
-          store-path: ${{ github.workspace }}/tests-ui/vscuse
+          store-path: ${{ github.workspace }}/packages/tests/vscuse/binary
 
 
       # Download the latest version of VSCode User setup and install it
@@ -393,10 +465,6 @@ jobs:
       - name: Install dependencies
         run: npm install @octokit/auth-app @octokit/request
 
-      - name: Run download script (Use the specified version of vscuse)
-        working-directory: packages/tests/vscuse/binary
-        run: node download-vscuse.js v0.1.14
-
       # Close all web browsers before minimizing windows
       - name: Close all web browsers
         shell: powershell
@@ -475,7 +543,7 @@ jobs:
       - name: Upload VSCUSE session files
         uses: actions/upload-artifact@v4
         with:
-          name: vscuse-session-log-Case-${{ matrix.file }}-${{ matrix.os }}-${{ matrix.node }}-${{ matrix.branch }}-${{ steps.generate_time.outputs.value }}
+          name: vscuse-session-log-Case-${{ matrix.file }}-${{ matrix.os }}-${{ matrix.node }}-${{ steps.generate_time.outputs.value }}
           path: ${{ env.SESSION_PATH }}
 
       - name: Generate UUID (Windows compatible)
@@ -519,8 +587,6 @@ jobs:
         with:
           name: storage-url-${{ matrix.file }}_${{ github.run_id }}
           path: storage_url.txt
-
-
       - name: Fail pipeline if test result is not passed
         run: |
           if ("${{ env.TEST_RESULT }}" -ne "passed") {
@@ -558,6 +624,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+
+      - name: Ensure vscuse-related folder exists
+        shell: pwsh
+        run: |
+          $casesFolderPath = "packages/tests/vscuse/agent_cases"
+          if (-not (Test-Path -Path $casesFolderPath)) {
+            New-Item -ItemType Directory -Path $casesFolderPath | Out-Null
+            Write-Host "Created folder: $casesFolderPath"
+          } else {
+            Write-Host "Folder already exists: $casesFolderPath"
+          }
+
+      # Download test case files artifact and unzip to agent_cases
+      - name: Download vscuse-agent-cases artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vscuse-agent-cases
+          path: packages/tests/vscuse/agent_cases
+
+      - name: Unzip test case files if zipped
+        shell: pwsh
+        run: |
+          $zipFiles = Get-ChildItem -Path "packages/tests/vscuse/agent_cases" -Filter *.zip
+          if ($zipFiles.Count -eq 0) {
+            Write-Host "No zip files found in agent_cases directory."
+          }
+          foreach ($zip in $zipFiles) {
+            Write-Host "Unzipping $($zip.FullName)..."
+            Expand-Archive -Path $zip.FullName -DestinationPath "packages/tests/vscuse/agent_cases" -Force
+            Remove-Item $zip.FullName
+          }
+          Get-ChildItem -Path "packages/tests/vscuse/agent_cases" -Recurse | ForEach-Object { Write-Host $_.FullName }
 
       - name: Download storage URLs
         uses: actions/download-artifact@v4
@@ -617,14 +716,13 @@ jobs:
 
       - name: list jobs
         id: list-jobs
+        working-directory: packages/tests/vscuse
         run: |
           page=1
           jobs="[]"
           echo "Initial jobs: $jobs"
           
-          case_title_file_path="vscuse/agent_cases/case_title.json"
           report_map_json_file_path="/tmp/url_mapping.json"
-
 
           while :
           do
@@ -679,23 +777,42 @@ jobs:
             node=$(echo "$case" | awk -F '|' '{print $3}')
             branch=$(echo "$case" | awk -F '|' '{print $4}')
 
-            title=$(jq -r --arg name "$name" '.[$name]' "$case_title_file_path")
-      
-            if [ -z "$title" ]; then
-              title="Unknown Test Case Title"
+            title="Unknown Test Case Title"
+            author="N/A"
+            work_item_url="N/A"
+
+            # Extract the title and author, and url from the corresponding agent_cases file
+            case_file="./agent_cases/${case_id}.txt"
+            echo "Looking for case file: $case_file"
+            if [ -f "$case_file" ]; then
+              echo "Found case file: $case_file"
+              echo "whole file content:"
+              cat "$case_file"
+              # Get title
+              title=$(grep -m1 '^#Title:' "$case_file" | sed 's/^#Title:[[:space:]]*//')
+              echo "Extracted title: $title"
+
+
+              # Get author
+              author_line=$(grep -m1 '^#Author:' "$case_file" | sed 's/^#Author:[[:space:]]*//')
+              if [ -n "$author_line" ]; then
+              author="<a href=\\\"mailto:$author_line\\\"><span>$author_line</span></a>"
+              fi
+              echo "Extracted author: $author"
+
+              # Get work item URL
+              url_line=$(grep -m1 '^#URL:' "$case_file" | sed 's/^#URL:[[:space:]]*//')
+              if [ -n "$url_line" ]; then
+                work_item_url="<a href=\\\"$url_line\\\">Work Item</a>"
+              fi
+              echo "Extracted work item URL: $work_item_url"
             fi
       
-            echo "Extracted info - Name: $name, OS: $os, Node: $node, Branch: $branch, case ID: $case_id"
+            echo "Extracted info - Name: $name, OS: $os, Node: $node, Branch: $branch, Case ID: $case_id, Title: $title, Author: $author, Work Item URL: $work_item_url"
       
-            file=$(find src -name "$name.test.ts" 2>/dev/null)
-            echo "Test file found: $file"
-      
-            email=""
-            if [ -n "$file" ] && grep -q "@author" "$file"; then
-              email=$(grep '@author' "$file" | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}')
-            fi
-            echo "Extracted email: $email"
-      
+            # file=$(find src -name "$name.test.ts" 2>/dev/null)
+            # echo "Test file found: $file"
+           
             status=$(echo "$jobs" | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion')
             echo "Job status: $status"
 
@@ -728,11 +845,7 @@ jobs:
             duration=$(dateutils.ddiff "$started_at" "$completed_at" -f "%Mm %Ss" 2>/dev/null)
             echo "Calculated duration: $duration"
       
-            author="N/A"
-            if [ -n "$email" ]; then
-              author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
-            fi
-            echo "Author: $author"
+            
       
             label=""
             if [ "$status" == "success" ]; then
@@ -748,7 +861,7 @@ jobs:
             url="<a href=\\\"$url\\\">$name</a>"
             echo "Job URL: $url"
       
-            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: left;\\\">$title</td> <td style=\\\"text-align: left;\\\">$os</td> <td style=\\\"text-align: left;\\\">$node</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$duration</td>  <td style=\\\"text-align: center;\\\">$report_url</td> </tr>"
+            row="<tr> <td style=\\\"text-align: left;\\\">$url</td> <td style=\\\"text-align: left;\\\">$title</td> <td style=\\\"text-align: left;\\\">$os</td> <td style=\\\"text-align: left;\\\">$node</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> <td style=\\\"text-align: center;\\\">$work_item_url</td> <td style=\\\"text-align: center;\\\">$duration</td>  <td style=\\\"text-align: center;\\\">$report_url</td> </tr>"
             echo "Generated row: $row"
       
             if [[ "$status" == "success" && $passed -lt $passedlimit ]]; then
@@ -763,7 +876,7 @@ jobs:
           echo "Final failed list: $failedlist"
           echo "Final passed list: $passedlist"
       
-          body="<a href=\\\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\\\">Test report link.</a>  <br/> Release: ${{ needs.setup.outputs.ttk-package }}. <br/> <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>TITLE</th> <th>OS</th> <th>NODE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> <th>Report URL</th> </tr> $lists </table> <br />"
+          body="<a href=\\\"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\\\">Test report link.</a>  <br/> Release: ${{ needs.setup.outputs.ttk-package }}. <br/> <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>TITLE</th> <th>OS</th> <th>NODE</th> <th>STATUS</th> <th>AUTHOR</th><th>WORK ITEM</th> <th>DURATION</th> <th>Report URL</th> </tr> $lists </table> <br />"
           echo "Generated email body: $body"
       
           total=$((passed+failed))
@@ -782,7 +895,7 @@ jobs:
           echo "subject=$subject" >> $GITHUB_OUTPUT
         
         
-      - name: Send E-mail(v2)
+      - name: Send E-mail
         uses: ./.github/actions/send-email-report
         env:
           TO: ${{ steps.list-jobs.outputs.to }}
