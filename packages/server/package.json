@@ -1,8 +1,8 @@
 {
-  "name": "@microsoft/teamsfx-server",
+  "name": "@darbot/agent-toolkit-server",
   "version": "2.0.19",
-  "author": "Microsoft Corporation",
-  "description": "",
+  "author": "Darbotlabs",
+  "description": "Darbot Agent Toolkit Server",
   "license": "MIT",
   "engines": {
     "node": ">=14"
@@ -10,7 +10,7 @@
   "bin": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OfficeDev/TeamsFx.git"
+    "url": "git+https://github.com/darbotlabs/darbot-agent-toolkit.git"
   },
   "keywords": [
     "teamsfx",
