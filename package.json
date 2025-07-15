@@ -1,7 +1,7 @@
 {
-  "name": "teamsfx",
+  "name": "darbot-agent-toolkit",
   "version": "1.0.0",
-  "description": "",
+  "description": "A comprehensive framework for building intelligent agents and conversational AI applications",
   "main": "index.js",
   "scripts": {
     "setup": "pnpm install && npm run build",
@@ -23,7 +23,7 @@
     "rimraf": "^5.0.1",
     "ts-node": "^10.2.1"
   },
-  "keywords": [],
+  "keywords": ["agent", "ai", "conversational-ai", "chatbot", "toolkit", "framework"],
   "engines": {
     "node": ">=22",
     "pnpm": ">=8"

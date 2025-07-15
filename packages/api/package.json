@@ -1,15 +1,16 @@
 {
-  "name": "@microsoft/teamsfx-api",
+  "name": "@darbot/agent-toolkit-api",
   "version": "0.23.7",
-  "description": "teamsfx framework api",
+  "description": "Darbot Agent Toolkit API",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
   "keywords": [
-    "teamsfx",
+    "darbot",
+    "agent-toolkit",
     "api"
   ],
-  "repository": "https://github.com/",
+  "repository": "https://github.com/darbotlabs/darbot-agent-toolkit",
   "files": [
     "build/**/*"
   ],
