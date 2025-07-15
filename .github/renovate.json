@@ -1,10 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
-  "username": "teamsfx-renovate[bot]",
-  "gitAuthor": "teamsfx-renovate<134346904+teamsfx-renovate[bot]@users.noreply.github.com>",
+  "username": "darbot-renovate[bot]",
+  "gitAuthor": "darbot-renovate<darbot-renovate[bot]@users.noreply.github.com>",
   "dependencyDashboard": false,
-  "repositories": ["OfficeDev/TeamsFx"],
+  "repositories": ["darbotlabs/darbot-agent-toolkit"],
   "includePaths": ["packages/sdk/**", "packages/sdk-react/**", "templates/**"],
   "enabledManagers": ["npm"],
   "npm": {
