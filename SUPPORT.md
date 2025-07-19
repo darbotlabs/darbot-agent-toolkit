@@ -1,20 +1,20 @@
 # Support
 
-## Teams Toolkit lifecycle and support policy
+## Darbot Agent Toolkit lifecycle and support policy
 
-The Teams Toolkit lifecycle and support policy covers GA and future versions.
+The Darbot Agent Toolkit lifecycle and support policy covers GA and future versions.
 
-Teams Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern) unless otherwise noted.
+Darbot Agent Toolkit products will follow [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern) unless otherwise noted.
 
-In addition, we want to add additional support on top of Microsoft standard Modern Lifecycle Policy:
+In addition, we want to add additional support on top of standard Modern Lifecycle Policy:
 
-### Teams Toolkit for Visual Studio Code
+### Darbot Agent Toolkit for Visual Studio Code
 
 Visual Studio Code is also following [Modern Lifecycle Policy](https://docs.microsoft.com/lifecycle/policies/modern).
 
-As extension on Visual Studio Code, we would follow Modern Lifecycle Policy add additional support that for any Teams Toolkit for Visual Studio Code major version, we offer 2-year support* since its first release.
+As extension on Visual Studio Code, we would follow Modern Lifecycle Policy add additional support that for any Darbot Agent Toolkit for Visual Studio Code major version, we offer 2-year support* since its first release.
 
-### Teams Toolkit for Visual Studio
+### Darbot Agent Toolkit for Visual Studio
 
 Visual Studio follows the [Fixed Lifecycle Policy](https://docs.microsoft.com/visualstudio/productinfo/vs-servicing) with a 10-year support of major versions (5 years Mainstream and 5 years Extended), and a [Channel-based support](https://docs.microsoft.com/visualstudio/productinfo/vs-servicing) for 18 months of minor versions. Since our product is extension to Visual Studio Product, we are not on Visual Studio’s own support policy. but we will offer 2-year support* for major versions, and 18 months for the minor versions. Teams Toolkit for Visual Studio is in sync with the same version of Visual Studio.
 

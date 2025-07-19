@@ -1,10 +1,10 @@
 {
-  "name": "@microsoft/vscode-ui",
+  "name": "@darbot/vscode-ui",
   "version": "1.0.9",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
-  "publisher": "TeamsDevApp",
+  "publisher": "Darbotlabs",
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",

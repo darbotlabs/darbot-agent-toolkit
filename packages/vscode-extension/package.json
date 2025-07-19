@@ -1,16 +1,16 @@
 {
-  "name": "ms-teams-vscode-extension",
-  "displayName": "Microsoft 365 Agents Toolkit",
-  "description": "Create, debug, and deploy agents with Microsoft 365 Agents Toolkit",
+  "name": "darbot-agent-toolkit-vscode",
+  "displayName": "Darbot Agent Toolkit",
+  "description": "Create, debug, and deploy agents with Darbot Agent Toolkit",
   "version": "6.0.2",
-  "publisher": "TeamsDevApp",
-  "author": "Microsoft Corporation",
+  "publisher": "Darbotlabs",
+  "author": "Darbotlabs",
   "private": true,
-  "icon": "media/m365-agents-toolkit-color.png",
+  "icon": "media/darbot-agent-toolkit-color.png",
   "main": "./out/src/extension.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OfficeDev/TeamsFx"
+    "url": "https://github.com/darbotlabs/darbot-agent-toolkit"
   },
   "views": {
     "teamsfx-toolkit": [

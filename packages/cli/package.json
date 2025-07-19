@@ -1,15 +1,15 @@
 {
-  "name": "@microsoft/m365agentstoolkit-cli",
+  "name": "@darbot/agent-toolkit-cli",
   "version": "1.0.3",
-  "author": "Microsoft Corporation",
-  "description": "Microsoft 365 Agents Toolkit CLI",
+  "author": "Darbotlabs",
+  "description": "Darbot Agent Toolkit CLI",
   "license": "MIT",
   "engines": {
     "node": ">=12"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OfficeDev/teams-toolkit.git"
+    "url": "git+https://github.com/darbotlabs/darbot-agent-toolkit.git"
   },
   "scripts": {
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",

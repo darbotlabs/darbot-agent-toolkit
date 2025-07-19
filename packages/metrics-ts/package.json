@@ -1,18 +1,18 @@
 {
-  "name": "@microsoft/metrics-ts",
+  "name": "@darbot/metrics-ts",
   "version": "0.0.7",
   "description": "Add metrics without intruding source code",
   "keywords": [
     "Metrics"
   ],
-  "author": "Long Hao<haolong@microsoft.com>",
-  "homepage": "https://github.com/OfficeDev/TeamsFx#readme",
+  "author": "Darbotlabs",
+  "homepage": "https://github.com/darbotlabs/darbot-agent-toolkit#readme",
   "license": "MIT",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OfficeDev/TeamsFx.git"
+    "url": "git+https://github.com/darbotlabs/darbot-agent-toolkit.git"
   },
   "scripts": {
     "build": "rimraf build && npx tsc -p ./",
